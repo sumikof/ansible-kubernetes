@@ -1,0 +1,21 @@
+---
+#version: "2.0"
+- hosts: all
+  user: centos
+  become: yes
+  roles:
+    - yum-epel
+  
+- hosts: kuber-master
+  user: centos
+  become: yes
+  roles:
+    - kubernetes-master
+
+- hosts: kuber-node
+  user: centos
+  become: yes
+  roles:
+    - kubernetes-node
+
+

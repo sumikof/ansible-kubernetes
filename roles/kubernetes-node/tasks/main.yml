@@ -1,0 +1,53 @@
+---
+- name: install packages docker
+  yum: name={{ item }} state=present
+  with_items:
+    - kubernetes
+    - docker
+    - flannel
+
+- name: edit /etc/kubernetes/config
+  lineinfile: >-
+    dest='/etc/kubernetes/config'
+    state=present
+    backrefs=yes
+    regexp='KUBE_MASTER='
+    line='KUBE_MASTER="--master=http://{{ kuber_master_ip }}:8080"'
+
+- name: edit /etc/kubernetes/kubelet
+  lineinfile: >-
+    dest='/etc/kubernetes/kubelet'
+    state=present
+    backrefs=yes
+    regexp='{{ item.regexp }}'
+    line='{{ item.line }}'
+  with_items:
+    - regexp: 'KUBELET_ADDRESS='
+      line: 'KUBELET_ADDRESS="--address={{ ansible_eth0.ipv4.address }}"'
+    - regexp: 'KUBELET_HOSTNAME='
+      line: 'KUBELET_HOSTNAME="--hostname-override={{ inventory_hostname }}"'
+    - regexp: 'KUBELET_API_SERVER='
+      line: 'KUBELET_API_SERVER="--api-servers=http://{{ kuber_master_ip }}:8080"'
+
+- name: edit /etc/sysconfig/flanneld
+  lineinfile: >-
+    dest='/etc/sysconfig/flanneld'
+    state=present
+    backrefs=yes
+    regexp='{{ item.regexp }}'
+    line='{{ item.line }}'
+  with_items:
+    - regexp: 'FLANNEL_ETCD_ENDPOINTS='
+      line: 'FLANNEL_ETCD_ENDPOINTS="http://{{ kuber_master_name }}:2379"'
+    - regexp: 'FLANNEL_ETCD_ENDPOINTS='
+      line: 'FLANNEL_ETCD_ENDPOINTS="http://{{ kuber_master_name }}:2379"'
+
+- name: restart service
+  service: name={{ item }} state=restarted enabled=yes
+  with_items:
+    - kubelet
+    - flanneld
+    - docker
+    - kube-scheduler
+    - kube-proxy
+
