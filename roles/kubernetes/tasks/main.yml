@@ -1,0 +1,29 @@
+---
+- name: yum update
+  yum: name=* state=latest
+
+- name: host setup
+  lineinfile: >-
+    dest='/etc/hosts'
+    state=present
+    line="{{ item.ip }} {{ item.name }}"
+  with_items:
+    - "{{ kuber_node }}"
+
+- name: selinux off
+  selinux: state=disabled
+
+- name: Add Kubernetes repository
+  yum_repository:
+    name: Kubernetes
+    description: Kubernetes
+    baseurl: https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    gpgkey: "https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg"
+    gpgcheck: yes
+
+- name: install kubernetes packages 
+  yum: name={{ item }} state=present
+  with_items:
+    - kubernetes
+    - flannel
+    - docker

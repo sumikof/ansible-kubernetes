@@ -3,8 +3,8 @@
 - hosts: all
   user: centos
   become: yes
-  tasks:
-    - yum: name=* state=latest
+  roles:
+    - kubernetes
 
   
 - hosts: kuber-master
