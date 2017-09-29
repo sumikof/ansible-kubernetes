@@ -1,4 +1,12 @@
 ---
+- name: host setup
+  lineinfile: >-
+    dest='/etc/hosts'
+    state=present
+    line="{{ item.ip }} {{ item.name }}"
+  with_items:
+    - "{{ kuber_node }}"
+
 - name: install packages docker
   yum: name={{ item }} state=present
   with_items:

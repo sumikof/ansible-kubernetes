@@ -3,8 +3,9 @@
 - hosts: all
   user: centos
   become: yes
-  roles:
-    - yum-epel
+  tasks:
+    - yum: name=* state=latest
+
   
 - hosts: kuber-master
   user: centos
